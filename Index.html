@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory App</title>
+    <link rel="stylesheet" href="Styles.Css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-yellow-100 min-h-screen flex flex-col items-centre p-4">
+
+    <h1 class="text-3xl font-bold mb-6 text-indigo-600">Inventory App</h1> 
+    
+    <div class="bg-white shadow-md rounded p-4 w-full max-w-md mb-6">
+      <h2 class="text-xl font-semibold mb-4">Add New Item</h2>
+      
+      <form id="itemForm" class="space-y-3">
+        <input type="text" id="name" placeholder="Item Name" class="w-full border px-3 py-2 rounded focus:outline-none focus:ring-indigo-400" required>
+        <input type="number" id="quantity" placeholder="Quantity" class="w-full border px-3 py-2 rounded focus:outline-none focus:ring-indigo-400" required min="0">
+        <input type="number" id="price" placeholder="Price" class="w-full border px-3 py-2 rounded focus:outline-none focus:ring-indigo-400" required min="0">
+        <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">Add Item</button>
+      </form>
+    </div>  
+    
+    <input type="text" id="search" placeholder="Search Items..." class="w-full max-w-md mb-4 px-3 py-2 border w-full border rounded focus:outline-none focus:ring-indigo-400" toUpperCase>
+
+    <div class="bg-white shadow-md rounded p-4 w-full max-w-md">
+      <h2 class="text-xl font-semibold mb-4">Inventory List</h2>
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b">
+            <th class="py-2">Name</th>
+            <th class="py-2">Qty</th>
+            <th class="py-2">Price</th>
+            <th class="py-2">Total</th>
+            <th class="py-2">Action</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryTable"></tbody>
+      </table>
+      <div class="mt-4 flex justify-between font-semibold">
+          <span>Total Items: <Span id="totalItems">0</span></span>
+          <span>Total Value: Ugx <Span id="totalValue">0</span></span>  
+      </div>
+    </div>
+
+    <script>
+      const itemForm = document.getElementById('itemForm');
+      const inventoryTable = document.getElementById('inventoryTable');
+      const totalItemsEl = document.getElementById('totalItems');
+      const totalValueEl = document.getElementById('totalValue');
+      const searchInput = document.getElementById('search');
+
+      let inventory = [];
+         
+        function renderInventory(items) {
+          inventoryTable.innerHTML='';
+          items.forEach((item, index) => {
+            const row = document.createElement('tr');
+            row.classList.add('border-b');
+
+            row.innerHTML = `
+              <td class="py-2">${item.name}</td>
+              <td class="py-2">${item.quantity}</td>
+              <td class="py-2">Ugx ${item.price}</td>
+              <td class="py-2">Ugx ${(item.quantity * item.price).toFixed(2)}</td>
+              <td class="py-2 space-x-2">
+                  <button onclick= "editItem(${index})" class="bg-yellow-400 px-2 py-1 rounded hover:bg-yellow-600">Edit</button>
+                  <button onclick= "deleteItem(${index})" class="bg-red-600 px-2 py-1 rounded hover:bg-red-700">Delete</button>
+              </td>
+              `;
+              inventoryTable.appendChild(row);
+            });
+            updateTotals();
+        }  
+        
+        function updateTotals() {
+          totalItemsEl.textContent = inventory.reduce((acc, item) => acc + Number(item.quantity), 0);
+          totalValueEl.textContent = inventory.reduce((acc, item) => acc + item.quantity * item.price, 0);
+        }
+
+        function editItem(index) {
+          const item = inventory[index];
+          document.getElementById('name').value = item.name;
+          document.getElementById('quantity').value = item.quantity;
+          document.getElementById('price').value = item.price;
+          deleteItem(index);
+       }
+
+       function deleteItem(index){
+         inventory.splice(index, 1);
+         renderInventory(inventory);
+       }
+
+       itemForm.addEventListener('submit', (e) =>{
+          e.preventDefault();
+          const name = document.getElementById('name').value.trim();
+          const quantity = Number(document.getElementById('quantity').value);
+          const price = Number(document.getElementById('price').value);
+
+          inventory.push({ name, quantity, price});
+          renderInventory(inventory);
+          itemForm.reset();
+       });
+
+        searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toUpperCase();
+        renderInventory(inventory.filter(item => item.name.toUpperCase().includes(query)));
+      });
+      
+    </script>
+
+</body>
+
+
+</html>
